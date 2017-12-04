@@ -21,7 +21,7 @@ public class ServerThread implements Runnable {
     private Thread t;
     NetworkUtil nc;
     EndDevice endDevice;
-    private int hop_count;
+    private int hop_count,source,dest;
     private String wholePath;
     private ArrayList<Router>routers = new ArrayList<>();
 
@@ -47,29 +47,28 @@ public class ServerThread implements Runnable {
                 and send back to client
         3. Either send acknowledgement with number of hops or send failure message back to client
         */
-        for(int i=0;i<5;i++){
+        for(int i=0;i<100;i++){
             nc.write(NetworkLayerServer.getRandomEndDevice());
             Packet p = (Packet)nc.read();
             boolean sent = deliverPacket(p);
             Packet packet = new Packet("","",null,null,null,null);
             if(sent){
+                packet.setDest(dest);
+                packet.setSource(source);
+                packet.setWholePath(wholePath);
                 packet.setMessage("sent");
+                packet.setHopCount(hop_count);
                 if(p.getSpecialMessage().equals("SHOW_ROUTE")){
-                    packet.setHopCount(hop_count);
-                    packet.setWholePath(wholePath);
+
                     packet.setRouters(routers);
-                }
-                else {
-                    packet.setHopCount(hop_count);
                 }
             }
             else
             {
-                if(p.getSpecialMessage().equals("SHOW_ROUTE")){
-                    packet.setMessage("not sent");
-                    packet.setWholePath(wholePath);
-                }
-                else packet.setMessage("not sent");
+                packet.setMessage("not sent");
+                packet.setWholePath(wholePath);
+                packet.setDest(dest);
+                packet.setSource(source);
             }
             nc.write(packet);
         }
@@ -123,18 +122,21 @@ public class ServerThread implements Runnable {
        //System.out.println(p.getSourceGateway());
         Router sourceRouter = NetworkLayerServer.getRouter(p.getSourceGateway()) ,
                 destinationRouter = NetworkLayerServer.getRouter(p.getDestinationGateway());
-        System.out.println(sourceRouter.getRouterId() + " " + destinationRouter.getRouterId());
+        source = sourceRouter.getRouterId();
+        dest = destinationRouter.getRouterId();
+        //System.out.println(sourceRouter.getRouterId() + " " + destinationRouter.getRouterId());
         Router intermediateRouter = sourceRouter;
-        System.out.println(sourceRouter.getRouterId());
+        //System.out.println(sourceRouter.getRouterId());
         wholePath = Integer.toString(sourceRouter.getRouterId());
         routers.add(sourceRouter);
         int i = 0;
         while(destinationRouter != intermediateRouter){
+            //System.out.println("lol");
             //System.out.println("kochu");
             i++;
             if(i==Constants.INFTY)return false;
-            //System.out.println("baal");
-            if(destinationRouter.getState() == false)return false;
+
+            //if(destinationRouter.getState() == false)return false;
             if(intermediateRouter.getState() == false) return false;
             RoutingTableEntry routingTableEntry = intermediateRouter.getRoutingTable().get(destinationRouter.getRouterId()-1);
             //System.out.println("kochu " + routingTableEntry.getGatewayRouterId());
@@ -149,6 +151,7 @@ public class ServerThread implements Runnable {
                 RoutingTableEntry routingTableEntry1 = possibleIntermediateRouter.getRoutingTable().get(intermediateRouter.getRouterId()-1);
                 if(routingTableEntry1.getDistance() == Constants.INFTY){
                     routingTableEntry1.setDistance(1);
+                    routingTableEntry1.setGatewayRouterId(intermediateRouter.getRouterId());
                     RouterStateChanger.resume = false;
                     NetworkLayerServer.DVR(possibleIntermediateRouter.getRouterId());
                     RouterStateChanger.resume = true;
@@ -160,6 +163,7 @@ public class ServerThread implements Runnable {
             }
             else{
                 routingTableEntry.setDistance(Constants.INFTY);
+                routingTableEntry.setGatewayRouterId(-1);
                 RouterStateChanger.resume = false;
                 NetworkLayerServer.DVR(intermediateRouter.getRouterId());
                 RouterStateChanger.resume = true;

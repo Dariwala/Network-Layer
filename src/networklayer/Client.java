@@ -56,12 +56,16 @@ public class Client {
         */
         EndDevice endDevice = (EndDevice)nc.read();
         Thread.sleep(12000);
-        for(int i=0;i<5;i++){
+
+        double hop_count = 0;
+        int missed = 0;
+
+        for(int i=0;i<100;i++){
 
 
             String message = "abc";
             EndDevice recipient = (EndDevice)nc.read();
-            if(i==2){
+            if(i==20){
                 String specialMsg = "SHOW_ROUTE";
                 Packet packet = new Packet(message,specialMsg,endDevice.getIp(),recipient.getIp(),endDevice.getGateway(),recipient.getGateway());
                 nc.write(packet);
@@ -75,8 +79,10 @@ public class Client {
             if(packet.getMessage().equals("sent")){
                 System.out.println("Successfully sent to receiver");
                 System.out.println(packet.getHopCount());
-                if(i==2){
-                    System.out.println(packet.getWholePath());
+                hop_count += packet.getHopCount();
+                System.out.println("Source: "+packet.getSource() + " Dest: "+ packet.getDest() + " Route: " + packet.getWholePath());
+                if(i==20){
+                    //System.out.println("Source: "+packet.getSource() + " Dest: "+ packet.getDest() + " Route: " + packet.getWholePath());
                     ArrayList<Router>routers = packet.getRoutere();
 
                     for(Router router : routers){
@@ -88,12 +94,14 @@ public class Client {
                 }
             }
             else{
+                missed++;
                 System.out.println("Packet dropped");
-                if(i==2){
-                    System.out.println(packet.getWholePath() + "(dropped)");
-                }
+                //if(i==20){
+                System.out.println("Source: "+packet.getSource() + " Dest: "+ packet.getDest() + " Route: " + packet.getWholePath() + " [Dropped]");
+                //}
             }
         }
+        System.out.println(hop_count/100 + " " + missed/100.0);
         Thread.sleep(12000);
         nc.closeConnection();
 

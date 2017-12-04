@@ -61,6 +61,7 @@ public class NetworkLayerServer {
         /**
          * Update routing table using distance vector routing until convergence
          */
+        //simpleDVR(1);
         DVR(1);
 
         /**
@@ -118,12 +119,14 @@ public class NetworkLayerServer {
         while(true) {
             //System.out.println("hoho");
             boolean convergence = false;
+
             for (int neighborRouterId : starter.getNeighborRouterIds()) {
                 Router neighbor = routers.get(neighborRouterId - 1);
                 if (neighbor.getState()) {
                     convergence |= neighbor.updateRoutingTable(starter);
                 }
             }
+
 
             for (Router router : routers) {
                 if (router.getState() && router.getRouterId() != startingRouterId) {
@@ -150,7 +153,7 @@ public class NetworkLayerServer {
             for (int neighborRouterId : starter.getNeighborRouterIds()) {
                 Router neighbor = routers.get(neighborRouterId - 1);
                 if (neighbor.getState()) {
-                    convergence |= neighbor.updateRoutingTable(starter);
+                    convergence |= neighbor.updateRoutingTableSimple(starter);
                 }
             }
 
@@ -228,12 +231,15 @@ public class NetworkLayerServer {
                 ArrayList<IPAddress> interfaceAddrs = new ArrayList<>();
 
                 routerId = inputFile.nextInt();
+                //System.out.println(routerId + "lol");
 
                 int count = inputFile.nextInt();
+                //System.out.print(count + "klochu");
                 for(int i=0;i<count;i++)
                 {
                     neighborRouters.add(inputFile.nextInt());
                 }
+
                 count = inputFile.nextInt();
                 inputFile.nextLine();
 

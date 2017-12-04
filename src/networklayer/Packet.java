@@ -19,7 +19,7 @@ public class Packet implements Serializable{
     private IPAddress sourceIP;
     private IPAddress sourceGateway;
     private IPAddress destinationGateway;
-    private int hopCount;
+    private int hopCount,source,dest;
     private String wholePath;
     private ArrayList<Router>routere = new ArrayList<>();
 
@@ -87,5 +87,11 @@ public class Packet implements Serializable{
     public void setRouters(ArrayList<Router> routere){this.routere = routere;}
 
     public ArrayList<Router> getRoutere(){return routere;}
+
+    public void setSource(int source){this.source = source;}
+    public int getSource(){return source;}
+
+    public void setDest(int dest){this.dest= dest;}
+    public int getDest(){return dest;}
 
 }

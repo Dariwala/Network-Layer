@@ -81,6 +81,7 @@ public class Router implements Serializable{
      */
     public void initiateRoutingTable()
     {
+        routingTable.clear();
         for(Router router : NetworkLayerServer.routers){
 
             int routerId = router.getRouterId();
@@ -149,7 +150,7 @@ public class Router implements Serializable{
         for(RoutingTableEntry routingTableEntry : neighbor.getRoutingTable()){
             int distance = routingTableEntry.getDistance();
             int gatewayRouterId = routingTableEntry.getGatewayRouterId();
-            //System.out.println(neighbor.getRoutingTable().size());
+            //System.out.println(neighbor.getRoutingTable().size() + " dhur");
             RoutingTableEntry ownRoutingTableEntry = routingTable.get(index);
             int ownDistance = ownRoutingTableEntry.getDistance();
             int ownGatewayRouterId = ownRoutingTableEntry.getGatewayRouterId();

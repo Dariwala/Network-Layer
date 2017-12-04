@@ -11,5 +11,5 @@ package networklayer;
  */
 public interface Constants {
     static final int INFTY = 10;
-    static final double LAMBDA = 0.10;
+    static final double LAMBDA = 0.1;
 }
